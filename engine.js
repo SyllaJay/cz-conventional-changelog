@@ -4,6 +4,34 @@ var wrap = require('word-wrap');
 var map = require('lodash.map');
 var longest = require('longest');
 var rightPad = require('right-pad');
+var fs = require('fs');
+
+
+function parseIntWithFallback(string, fallback) {
+  if (string) {
+    var parsed = parseInt(string, 10);
+    return !!parsed ? parsed : fallback;
+  } else {
+    return fallback;
+  }
+}
+
+var defaultMaxLineWidthHeader = 100;
+var defaultMaxLineWidthBody = 100;
+
+// Read from config file if exists. Otherwise, use default:
+var maxLineWidthHeader;
+var maxLineWidthBody;
+try {
+  var config = JSON.parse(fs.readFileSync('./conventional-changelog.json', 'utf8'));
+  var headerWidthConfig = config.maxLineWidthHeader;
+  var bodyWidthConfig = config.maxLineWidthBody;
+  maxLineWidthHeader = parseIntWithFallback(headerWidthConfig, defaultMaxLineWidthHeader);
+  maxLineWidthBody = parseIntWithFallback(bodyWidthConfig, defaultMaxLineWidthBody);
+} catch(e) {
+  maxLineWidthHeader = defaultMaxLineWidthHeader;
+  maxLineWidthBody = defaultMaxLineWidthBody;
+}
 
 var filter = function(array) {
   return array.filter(function(x) {
@@ -39,7 +67,7 @@ module.exports = function (options) {
     // By default, we'll de-indent your commit
     // template and will keep empty lines.
     prompter: function(cz, commit) {
-      console.log('\nLine 1 will be cropped at 100 characters. All other lines will be wrapped after 100 characters.\n');
+      console.log('\nLine 1 will be cropped at ' + maxLineWidthHeader + ' characters. All other lines will be wrapped after ' + maxLineWidthBody + ' characters.\n');
 
       // Let's ask some questions of the user
       // so that we can populate our commit
@@ -77,13 +105,12 @@ module.exports = function (options) {
         }
       ]).then(function(answers) {
 
-        var maxLineWidth = 100;
 
         var wrapOptions = {
           trim: true,
           newline: '\n',
           indent:'',
-          width: maxLineWidth
+          width: maxLineWidthBody
         };
 
         // parentheses are only needed when a scope is present
@@ -91,7 +118,7 @@ module.exports = function (options) {
         scope = scope ? '(' + answers.scope.trim() + ')' : '';
 
         // Hard limit this line
-        var head = (answers.type + scope + ': ' + answers.subject.trim()).slice(0, maxLineWidth);
+        var head = (answers.type + scope + ': ' + answers.subject.trim()).slice(0, maxLineWidthHeader);
 
         // Wrap these lines at 100 characters
         var body = wrap(answers.body, wrapOptions);
