@@ -5,8 +5,8 @@ This is a fork of [`cz-conventional-changelog`](https://github.com/commitizen/cz
 To configure, create a `conventional-changelog.json` file in the root directory of the project with the following content:
 ```javascript
 {
-  "maxLineWidthHeader": 100, // defaults to 72
-  "defaultMaxLineWidthBody": 100 // defaults to 80
+  "maxLineWidthHeader": 72, // defaults to 100
+  "defaultMaxLineWidthBody": 80 // defaults to 100
 }
 ```
 Both fields are optional. If not provided, default values are used.
